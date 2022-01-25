@@ -1,35 +1,11 @@
 import { Box, Button, Text, TextField, Image } from "@skynexui/components";
 import appConfig from "../config.json";
+import React from "react";
+import { useRouter } from "next/router";
+let check;
 
-function GlobalStyle() {
-  return (
-    <style global jsx>{`
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        list-style: none;
-      }
-      body {
-        font-family: "Open Sans", sans-serif;
-      }
-      /* App fit Height */
-      html,
-      body,
-      #__next {
-        min-height: 100vh;
-        display: flex;
-        flex: 1;
-      }
-      #__next {
-        flex: 1;
-      }
-      #__next > * {
-        flex: 1;
-      }
-      /* ./App fit Height */
-    `}</style>
-  );
+function changeCheck(value) {
+  check = value
 }
 
 function Title(props) {
@@ -52,19 +28,18 @@ function Title(props) {
 }
 
 function HomePage() {
-  const username = "VyctorCosta";
+  const route = useRouter();
+  const [username, setUsername] = React.useState("");
 
   return (
     <>
-      <GlobalStyle />
       <Box
         styleSheet={{
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
         //   backgroundColor: appConfig.theme.colors.primary[500],
-          backgroundImage:
-            "url(https://img.elo7.com.br/product/zoom/2AC11BE/placa-decorativa-quadro-anime-rick-and-morty-gh347-placa-decorativa.jpg)",
+          backgroundImage: `url(/img/background.png)`,
           backgroundRepeat: "no-repeat",
           backgroundSize: "cover",
           backgroundBlendMode: "multiply",
@@ -91,6 +66,11 @@ function HomePage() {
           {/* Formulário */}
           <Box
             as="form"
+            onSubmit={(event) => {
+              event.preventDefault();
+              route.components["/_app"].username = username
+              route.push("/chat");
+            }}
             styleSheet={{
               display: "flex",
               flexDirection: "column",
@@ -113,6 +93,11 @@ function HomePage() {
             </Text>
 
             <TextField
+              value={username}
+              onChange={(event) => {
+                const inputValue = event.target.value;
+                setUsername(inputValue);
+              }}
               fullWidth
               textFieldColors={{
                 neutral: {
@@ -159,7 +144,7 @@ function HomePage() {
                     borderRadius: "50%",
                     marginBottom: "16px",
                 }}
-                src={`https://github.com/${username}.png`}
+                src={username.length <= 3 ?  "/img/user_default.png" : `https://github.com/${username}.png`}
                 />
                 <Text
                 variant="body4"
