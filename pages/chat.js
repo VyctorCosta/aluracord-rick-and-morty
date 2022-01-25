@@ -4,7 +4,6 @@ import appConfig from "../config.json";
 
 function Chat() {
     const route = useRouter();
-    console.log(route)
     return (
         <>
             <h1>Bem vindo(a). <br /> Infelizmente essa pagina está incompleta no momento. <br /> Por favor volte mais tarde. <br />

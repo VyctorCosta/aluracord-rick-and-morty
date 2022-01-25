@@ -144,7 +144,8 @@ function HomePage() {
                     borderRadius: "50%",
                     marginBottom: "16px",
                 }}
-                src={username.length <= 3 ?  "/img/user_default.png" : `https://github.com/${username}.png`}
+                src={`https://github.com/${username}.png`}
+                onError={({currentTarget}) => currentTarget.src="/img/user_default.png"}
                 />
                 <Text
                 variant="body4"
