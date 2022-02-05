@@ -6,7 +6,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0NDA5Njg3OSwiZXhwIjoxOTU5NjcyODc5fQ.K3ieBQR_3BkVJmB87FYvUq9DuJbesFjRU2soWioX4Ss";
 const SUPABASE_URL = "https://thrrsakzfcotzlkclnxf.supabase.co";
-//const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 function Chat() {
   const [arrayMessage, setArrayMessage] = React.useState([]);
