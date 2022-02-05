@@ -151,11 +151,7 @@ function Header() {
 
 function MessageList({ arrayMessage, setArrayMessage }) {
   const removeMessageFromId = (id) => {
-    const arrayTemp = arrayMessage.filter(el => {
-      return el.id !== id
-    })
-    setArrayMessage([...arrayTemp]);
-    console.log(arrayMessage)
+    setArrayMessage(arrayMessage.filter(el => el.id !== id));
   }
 
   return (
