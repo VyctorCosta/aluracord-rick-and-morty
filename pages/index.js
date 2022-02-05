@@ -29,7 +29,7 @@ function Title(props) {
 
 function HomePage() {
   const route = useRouter();
-  const [username, setUsername] = React.useState("");
+  const [username, setUsername] = React.useState("VyctorCosta");
 
   return (
     <>

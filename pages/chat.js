@@ -9,7 +9,7 @@ function Chat() {
   function handleNewMessage(newMessage) {
     setArrayMessage([
         {
-          id: arrayMessage.length + 1,
+          id: Math.random(),
           from: "VyctorCosta",
           message: newMessage,
         },
@@ -59,7 +59,7 @@ function Chat() {
             padding: "16px",
           }}
         >
-          <MessageList arrayMessage={arrayMessage} />
+          <MessageList arrayMessage={arrayMessage} setArrayMessage={setArrayMessage} />
 
           <Box
             as="form"
@@ -72,8 +72,8 @@ function Chat() {
             <a href={`https://github.com/${"VyctorCosta"}`} target="_blank">
                 <Image
                 styleSheet={{
-                    width: "55px",
-                    height: "55px",
+                    width: "3.4rem",
+                    height: "3.4rem",
                     borderRadius: "50%",
                     display: "inline-block",
                     marginRight: "4px",
@@ -149,7 +149,15 @@ function Header() {
   );
 }
 
-function MessageList({ arrayMessage }) {
+function MessageList({ arrayMessage, setArrayMessage }) {
+  const removeMessageFromId = (id) => {
+    const arrayTemp = arrayMessage.filter(el => {
+      return el.id !== id
+    })
+    setArrayMessage([...arrayTemp]);
+    console.log(arrayMessage)
+  }
+
   return (
     <Box
       tag="ul"
@@ -180,6 +188,7 @@ function MessageList({ arrayMessage }) {
               styleSheet={{
                 marginBottom: "8px",
               }}
+              keyid={objMessage.id}
             >
               <Image
                 styleSheet={{
@@ -202,6 +211,22 @@ function MessageList({ arrayMessage }) {
               >
                 {new Date().toLocaleDateString("pt-BR", {hour: "numeric", minute: "numeric"})}
               </Text>
+              <Image 
+                styleSheet={{
+                  width: "20px",
+                  height: "20px",
+                  display: "inline-block",
+                  marginLeft: "98%",
+                  cursor: "pointer"
+
+                }}
+                onClick={e => {
+                  const id = Number(e.target.parentElement.attributes.keyid.value);
+                  removeMessageFromId(id);
+
+                }}
+                src={"/img/x.png"}
+              />
             </Box>
             {objMessage.message}
           </Text>
