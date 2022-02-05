@@ -68,8 +68,10 @@ function HomePage() {
             as="form"
             onSubmit={(event) => {
               event.preventDefault();
-              route.components["/_app"].username = username
-              route.push("/chat");
+              route.push({
+                pathname: "/chat",
+                query: { username }
+              });
             }}
             styleSheet={{
               display: "flex",
