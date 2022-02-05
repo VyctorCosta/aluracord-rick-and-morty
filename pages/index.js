@@ -30,6 +30,17 @@ function Title(props) {
 function HomePage() {
   const route = useRouter();
   const [username, setUsername] = React.useState("VyctorCosta");
+  const [followers, setFollowers] = React.useState(0);
+  const [following, setFollowing] = React.useState(0);
+
+  const getFollowerInfo = (user) => {
+    fetch(`https://api.github.com/users/${user}`)
+      .then(response => response.json())
+      .then(({ followers, following }) => {
+        setFollowers(followers)
+        setFollowing(following)
+      })
+  }
 
   return (
     <>
@@ -68,8 +79,10 @@ function HomePage() {
             as="form"
             onSubmit={(event) => {
               event.preventDefault();
-              route.components["/_app"].username = username
-              route.push("/chat");
+              route.push({
+                pathname: "/chat",
+                query: { username }
+              });
             }}
             styleSheet={{
               display: "flex",
@@ -97,6 +110,7 @@ function HomePage() {
               onChange={(event) => {
                 const inputValue = event.target.value;
                 setUsername(inputValue);
+                getFollowerInfo(inputValue)
               }}
               fullWidth
               textFieldColors={{
@@ -157,6 +171,30 @@ function HomePage() {
                 }}
                 >
                 {username}
+                </Text>
+                <Text
+                variant="body4"
+                styleSheet={{
+                    color: appConfig.theme.colors.neutrals[200],
+                    backgroundColor: appConfig.theme.colors.neutrals[900],
+                    padding: "3px 10px",
+                    borderRadius: "1000px",
+                    marginTop: "10px",
+                }}
+                >
+                {`Seguidores: ${followers ? followers : 0}`}
+                </Text> 
+                <Text
+                variant="body4"
+                styleSheet={{
+                    color: appConfig.theme.colors.neutrals[200],
+                    backgroundColor: appConfig.theme.colors.neutrals[900],
+                    padding: "3px 10px",
+                    borderRadius: "1000px",
+                    marginTop: "10px",
+                }}
+                >
+                {`Seguindo: ${following ? following : 0}`}
                 </Text>
             </Box>
           </a>

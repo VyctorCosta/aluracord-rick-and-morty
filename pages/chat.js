@@ -1,16 +1,19 @@
 import React from "react";
 import { Box, Text, TextField, Image, Button, Link } from "@skynexui/components";
 import appConfig from "../config.json";
+import { useRouter } from "next/router";
 
 function Chat() {
   const [arrayMessage, setArrayMessage] = React.useState([]);
   const [message, setMessage] = React.useState("");
+  const router = useRouter();
+  const username = router.query.username;
 
   function handleNewMessage(newMessage) {
     setArrayMessage([
         {
           id: Math.random(),
-          from: "VyctorCosta",
+          from: username,
           message: newMessage,
         },
       ...arrayMessage
@@ -59,7 +62,7 @@ function Chat() {
             padding: "16px",
           }}
         >
-          <MessageList arrayMessage={arrayMessage} setArrayMessage={setArrayMessage} />
+          <MessageList arrayMessage={arrayMessage} setArrayMessage={setArrayMessage}/>
 
           <Box
             as="form"
@@ -69,7 +72,7 @@ function Chat() {
               gap: "25px"
             }}
           >
-            <a href={`https://github.com/${"VyctorCosta"}`} target="_blank">
+            <a href={`https://github.com/${username}`} target="_blank">
                 <Image
                 styleSheet={{
                     width: "3.4rem",
@@ -78,7 +81,8 @@ function Chat() {
                     display: "inline-block",
                     marginRight: "4px",
                 }}
-                src={`https://github.com/${"VyctorCosta"}.png`}
+                src={`https://github.com/${username}.png`}
+                onError={({ target }) => target.src="/img/user_default.png"}
                 />
             </a>
             <TextField
