@@ -2,11 +2,6 @@ import { Box, Button, Text, TextField, Image } from "@skynexui/components";
 import appConfig from "../config.json";
 import React from "react";
 import { useRouter } from "next/router";
-let check;
-
-function changeCheck(value) {
-  check = value
-}
 
 function Title(props) {
   const Tag = props.tag || "h1";
@@ -41,6 +36,10 @@ function HomePage() {
         setFollowing(following)
       })
   }
+
+  React.useEffect(() => {
+    getFollowerInfo(username)
+  }, [])
 
   return (
     <>
