@@ -14,23 +14,37 @@ function Chat() {
   const router = useRouter();
   const username = router.query.username;
 
-  React.useEffect(() => {
+  React.useEffect(updateChatScreen, [])
+
+  function updateChatScreen() {
     supabaseClient
       .from("messages")
       .select("*")
       .order("id", { ascending: false })
-      .then(({ data }) => setArrayMessage(data))
-  }, [])
+      .then(({ data }) => {
+        setArrayMessage(data)
+      })
+  }
+
 
   function handleNewMessage(newMessage) {
-    setArrayMessage([
-        {
-          id: Math.random(),
-          from: username,
-          message: newMessage,
-        },
-      ...arrayMessage
-    ]);
+    const message = {
+      from: username,
+      message: newMessage
+    }
+
+    supabaseClient
+      .from("messages")
+      .insert([
+        message
+      ])
+      .then(({ data }) => {
+        setArrayMessage([
+          data[0],
+          ...arrayMessage
+        ])
+      })
+
     setMessage("");
   }
 
@@ -167,8 +181,15 @@ function Header() {
 }
 
 function MessageList({ arrayMessage, setArrayMessage }) {
-  const removeMessageFromId = (id) => {
-    setArrayMessage(arrayMessage.filter(el => el.id !== id));
+  async function removeMessageFromId(id) {
+    const { data } = await supabaseClient
+      .from("messages")
+      .delete()
+      .match({ id })
+    
+    setArrayMessage(arrayMessage.filter(el => {
+      return el.id !== data[0].id
+    }))
   }
 
   return (
@@ -222,7 +243,7 @@ function MessageList({ arrayMessage, setArrayMessage }) {
                 }}
                 tag="span"
               >
-                {new Date().toLocaleDateString("pt-BR", {hour: "numeric", minute: "numeric"})}
+                {new Date(objMessage.created_at).toLocaleDateString("pt-BR", {hour: "numeric", minute: "numeric"})}
               </Text>
               <Image 
                 styleSheet={{
@@ -234,7 +255,7 @@ function MessageList({ arrayMessage, setArrayMessage }) {
 
                 }}
                 onClick={e => {
-                  const id = Number(e.target.parentElement.attributes.keyid.value);
+                  const id = e.target.parentElement.attributes.keyid.value;
                   removeMessageFromId(id);
 
                 }}
