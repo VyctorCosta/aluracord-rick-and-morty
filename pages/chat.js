@@ -1,135 +1,60 @@
 import React from "react";
-import {
-  Box,
-  Text,
-  TextField,
-  Image,
-  Button,
-  Link,
-} from "@skynexui/components";
+import { Box, Text, TextField, Image, Button} from "@skynexui/components";
 import appConfig from "../config.json";
 import { useRouter } from "next/router";
 import { createClient } from "@supabase/supabase-js";
+import { ButtonSendSticker } from "../src/components/ButtonSendSticker";
+import { LoadingAnimation } from "../src/components/LoadingAnimation";
 
-const SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0NDA5Njg3OSwiZXhwIjoxOTU5NjcyODc5fQ.K3ieBQR_3BkVJmB87FYvUq9DuJbesFjRU2soWioX4Ss";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0NDA5Njg3OSwiZXhwIjoxOTU5NjcyODc5fQ.K3ieBQR_3BkVJmB87FYvUq9DuJbesFjRU2soWioX4Ss";
 const SUPABASE_URL = "https://thrrsakzfcotzlkclnxf.supabase.co";
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-function loadingAnimation() {
-  return (
-    <Box
-      tag="ul"
-      styleSheet={{
-        overflow: "scroll",
-        display: "flex",
-        flexDirection: "column-reverse",
-        flex: 1,
-        color: appConfig.theme.colors.neutrals["000"],
-        marginBottom: "16px",
-      }}
-    >
-      {(function() {
-        const array = [];
-        for (let i = 0; i < 5; i++) {
-          array.push(
-            <Text
-              tag="li"
-              key={i}
-              styleSheet={{
-                borderRadius: "5px",
-                padding: "6px",
-                marginBottom: "12px",
-                hover: {
-                  backgroundColor: appConfig.theme.colors.neutrals[700],
-                },
-              }}
-            >
-              <Box
-                styleSheet={{
-                  marginBottom: "8px",
-                }}
-              >
-                <Box
-                  styleSheet={{
-                    width: "20px",
-                    height: "20px",
-                    borderRadius: "50%",
-                    display: "inline-block",
-                    marginRight: "8px",
-                    backgroundColor: appConfig.theme.colors.neutrals[350],
-                  }}
-                />
-                <Text 
-                  styleSheet={{
-                    color: appConfig.theme.colors.neutrals[350],
-                    backgroundColor: appConfig.theme.colors.neutrals[350],
-                    borderRadius: "6%",
-                  }}
-                >
-                  {"TextoBase"}
-                </Text>
-                <Text
-                  styleSheet={{
-                    fontSize: "10px",
-                    marginLeft: "8px",
-                    color: appConfig.theme.colors.neutrals[350],
-                    backgroundColor: appConfig.theme.colors.neutrals[350],
-                    borderRadius: "20%",
-                  }}
-                  tag="span"
-                >
-                  {"Data"}
-                </Text>
-                <Box
-                  styleSheet={{
-                    width: "20px",
-                    height: "20px",
-                    display: "inline-block",
-                    marginLeft: "98%",
-                    cursor: "pointer",
-                    borderRadius: "16%",
-                    backgroundColor: appConfig.theme.colors.neutrals[350],
-                  }}
-                />
-              </Box>
-              <Box
-                styleSheet={{
-                  width: "10%",
-                  color: appConfig.theme.colors.neutrals[350],
-                  backgroundColor: appConfig.theme.colors.neutrals[350],
-                  borderRadius: "4%"
-                }}
-              >
-                {"Messagem principal"}
-              </Box>
-            </Text>
-          );
-        }
-        return array;
-      })()}
-    </Box>
-  );
+function listenMessagesInRealTime(addMessage, removeMessage) {
+  return supabaseClient
+    .from("messages")
+    .on("INSERT", (response) => {
+      addMessage(response.new)
+    })
+    .on("DELETE", ({ old }) => {
+      removeMessage(old)
+    })
+    .subscribe();
 }
 
 function Chat() {
   const [arrayMessage, setArrayMessage] = React.useState([]);
   const [message, setMessage] = React.useState("");
+  const [receivedInfo, setReceivedInfo] = React.useState(false);
   const router = useRouter();
   const username = router.query.username;
 
-  React.useEffect(updateChatScreen, []);
-
-  function updateChatScreen() {
+  React.useEffect(() => {
     supabaseClient
       .from("messages")
       .select("*")
       .order("id", { ascending: false })
       .then(({ data }) => {
         setArrayMessage(data)
-        console.log("Carregou");
+        setReceivedInfo(true);
       });
-  }
+
+    listenMessagesInRealTime(messageAdded => {
+      setArrayMessage(arrayMessage => {
+        return [
+          messageAdded,
+          ...arrayMessage
+        ]
+      })
+    }, messageRemoved => {
+      setArrayMessage(arrayMessage => {
+        return arrayMessage.filter(el => {
+          return el.id !== messageRemoved.id
+        })
+      })
+    })
+
+  }, []);
 
   function handleNewMessage(newMessage) {
     const message = {
@@ -140,8 +65,8 @@ function Chat() {
     supabaseClient
       .from("messages")
       .insert([message])
-      .then(({ data }) => {
-        setArrayMessage([data[0], ...arrayMessage]);
+      .then(() => {
+        console.log("handleNewmEssage: Mensagem enviada")
       });
 
     setMessage("");
@@ -190,7 +115,7 @@ function Chat() {
         >
           <MessageList
             arrayMessage={arrayMessage}
-            setArrayMessage={setArrayMessage}
+            receivedInfo={receivedInfo}
           />
 
           <Box
@@ -238,6 +163,9 @@ function Chat() {
                 color: appConfig.theme.colors.neutrals[200],
               }}
             />
+
+            <ButtonSendSticker handleNewMessage={handleNewMessage}/>
+
             <Button
               label="Enviar"
               variant="tertiary"
@@ -282,21 +210,16 @@ function Header() {
   );
 }
 
-function MessageList({ arrayMessage, setArrayMessage }) {
-  async function removeMessageFromId(id) {
-    const { data } = await supabaseClient
+function MessageList({ arrayMessage, receivedInfo }) {
+  function removeMessageFromId(id) {
+    supabaseClient
       .from("messages")
       .delete()
-      .match({ id });
-
-    setArrayMessage(
-      arrayMessage.filter((el) => {
-        return el.id !== data[0].id;
-      })
-    );
+      .match({ id })
+      .then();
   }
 
-  if (arrayMessage.length === 0) return loadingAnimation();
+  if (!receivedInfo) return <LoadingAnimation />;
 
   return (
     <Box
@@ -369,7 +292,10 @@ function MessageList({ arrayMessage, setArrayMessage }) {
                 src={"/img/x.png"}
               />
             </Box>
-            {objMessage.message}
+            {objMessage.message.startsWith(":sticker:") 
+              ? (<Image src={objMessage.message.replace(":sticker: ", "")} styleSheet={{ maxWidth: "50vh" }}/>)
+              : (objMessage.message)
+            }
           </Text>
         );
       })}
